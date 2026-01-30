@@ -153,8 +153,7 @@
 
             <div class="flex items-center justify-between mb-2 mt-2">
                 <h2 class="text-xl font-bold text-white">
-                    {% if selected_date == today %} Today's Tasks {% else %} Tasks for {{ selected_date|date:"M d" }} {%
-                    endif %}
+                    {% if selected_date == today %} Today's Tasks {% else %} Tasks for {{ selected_date|date:"M d" }} {%endif %}
                 </h2>
                 {% if selected_date != today %}
                 <a href="?date={{ today|date:'Y-m-d' }}"
