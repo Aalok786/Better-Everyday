@@ -5,6 +5,7 @@ import random, json
 from urllib.request import urlopen
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.utils import timezone
 
 def calculate_streak(habit):
     """
@@ -44,82 +45,73 @@ def get_daily_score(selected_date):
 # ... (get_daily_score function waisa hi rahega) ...
 
 def daily_tracker(request):
-    today = date.today()
+    # 1. Date Selection Logic
+    today = timezone.now().date()
+    selected_date_str = request.GET.get('date') # URL se date uthao (?date=2026-01-20)
     
-    # --- 1. SMART GREETING LOGIC ---
-    current_hour = datetime.now().hour
-    if 5 <= current_hour < 12:
-        greeting = "Good Morning, Aalok"
-    elif 12 <= current_hour < 17:
-        greeting = "Good Afternoon, Aalok"
-    elif 17 <= current_hour < 22:
-        greeting = "Good Evening, Aalok"
+    if selected_date_str:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
     else:
-        greeting = "Hustling Late, Aalok?"
+        selected_date = today
 
-    # --- 2. HANDLE DAILY ENTRIES ---
-    habits = Habit.objects.filter(is_active=True).order_by('priority')
-    for habit in habits:
-        DailyEntry.objects.get_or_create(habit=habit, date=today)
-
-    if request.method == "POST":
-        entry_id = request.POST.get('entry_id')
-        entry = DailyEntry.objects.get(id=entry_id)
-        if entry.habit.habit_type == 'BOOL':
-            entry.value_bool = not entry.value_bool
-        elif entry.habit.habit_type == 'INT':
-            entry.value_int = request.POST.get('value_int', 0)
-        elif entry.habit.habit_type == 'TEXT':
-            entry.value_text = request.POST.get('value_text', '')
-        entry.save()
+    # Future Date Protection (Future mein jane se roko)
+    if selected_date > today:
         return redirect('tracker')
 
-    # --- 3. PREPARE DATA ---
-    entries = DailyEntry.objects.filter(date=today).order_by('habit__priority')
-    daily_data = []
-    for entry in entries:
-        streak = 0
-        past_entries = DailyEntry.objects.filter(habit=entry.habit, date__lt=today).order_by('-date')
-        for p in past_entries:
-            if p.value_bool or p.value_int > 0 or p.value_text:
-                streak += 1
-            else:
-                break
-        daily_data.append({'entry': entry, 'streak': streak})
-
-   # --- 4. COMPACT HEATMAP (Last 30 days for 6x5 Grid) ---
-    heatmap_data = []
-    # Start from 29 days ago so we end exactly on today (Total 30 days)
-    start_date = today - timedelta(days=29) # <-- CHANGED FROM 34 TO 29
+    # 2. Calendar Strip Data (Pichle 30 din ki list)
+    date_list = []
+    for i in range(30): # Last 30 days
+        d = today - timedelta(days=i)
+        date_list.append(d)
     
-    for i in range(30): # <-- CHANGED FROM 35 TO 30 (6 Rows x 5 Columns)
-        current_day = start_date + timedelta(days=i)
-        score = get_daily_score(current_day)
+    # 3. Habits & Data Fetching for Selected Date
+    habits = Habit.objects.all()
+    
+    # User ne us din kya tick kiya tha?
+    completed_habit_ids = []
+    try:
+        entry = DailyEntry.objects.get(date=selected_date)
+        completed_habit_ids = list(entry.habits_completed.values_list('id', flat=True))
+    except DailyEntry.DoesNotExist:
+        entry = None
+
+    # 4. Grid Logic (Home Page Consistency)
+    # (Ye purana logic hi hai, bas ab link banayega)
+    history = []
+    start_date = today - timedelta(days=29) # Grid start
+    for i in range(30):
+        d = start_date + timedelta(days=i)
+        try:
+            e = DailyEntry.objects.get(date=d)
+            total = habits.count()
+            done = e.habits_completed.count()
+            percent = int((done / total) * 100) if total > 0 else 0
+        except DailyEntry.DoesNotExist:
+            percent = 0
         
-        # Color Logic (Same as before)
-        color = "bg-gray-800"
-        if score > 0: color = "bg-green-900"
-        if score > 40: color = "bg-green-600"
-        if score > 80: color = "bg-green-400"
-        
-        heatmap_data.append({
-            'date': current_day,
-            'color': color,
-            'is_today': current_day == today,
-            'score': score
+        history.append({
+            'date': d, 
+            'percent': percent,
+            'is_today': (d == today)
         })
 
-    # --- 5. LOCAL QUOTE (Fallback) ---
-    quotes = Quote.objects.all()
-    random_quote = random.choice(quotes) if quotes.exists() else None
+    # 5. Stats Logic (Auto-Switch after Feb 7th)
+    show_stats = False
+    target_date = datetime.strptime("2026-02-07", "%Y-%m-%d").date()
+    if today >= target_date:
+        show_stats = True
 
     return render(request, 'tracker/index.html', {
-        'daily_data': daily_data,
-        'heatmap_data': heatmap_data,
-        'quote': random_quote,
+        'habits': habits,
+        'completed_ids': completed_habit_ids,
+        'selected_date': selected_date,
         'today': today,
-        'greeting': greeting, # <-- Sending greeting to template
+        'date_list': date_list,   # Calendar ke liye
+        'history': history,       # Grid ke liye
+        'show_stats': show_stats, # Stats toggle ke liye
+        'quote': Quote.objects.order_by('?').first()
     })
+
 # File ke sabse neeche ye paste karein:
 def create_superuser_view(request):
     try:
