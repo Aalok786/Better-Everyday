@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from .models import Habit, DailyEntry, Quote
 from datetime import date, timedelta, datetime # datetime import kiya greeting ke liye
 import random
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 def calculate_streak(habit):
     """
@@ -117,3 +119,13 @@ def daily_tracker(request):
         'today': today,
         'greeting': greeting, # <-- Sending greeting to template
     })
+# File ke sabse neeche ye paste karein:
+def create_superuser_view(request):
+    try:
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+            return HttpResponse("✅ Success! User: <b>admin</b> | Password: <b>admin123</b> created.")
+        else:
+            return HttpResponse("⚠️ Admin user already exists. Go to /admin to login.")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")
