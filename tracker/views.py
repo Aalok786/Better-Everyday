@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from .models import Habit, DailyEntry, Quote
+from .models import Habit, DailyEntry, Quote, DailyEntry
 from datetime import date, timedelta, datetime # datetime import kiya greeting ke liye
-import random
+import random, json 
+from urllib.request import urlopen
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 
@@ -129,3 +130,48 @@ def create_superuser_view(request):
             return HttpResponse("⚠️ Admin user already exists. Go to /admin to login.")
     except Exception as e:
         return HttpResponse(f"❌ Error: {str(e)}")
+    
+    # 1. Ye Naya "Bulk Loader" Function (150 Quotes wala)
+def populate_quotes(request):
+    # Ye ek free API hai jo 150 quality quotes deti hai
+    url = "https://dummyjson.com/quotes?limit=150"
+    
+    try:
+        response = urlopen(url)
+        data = json.loads(response.read())
+        
+        count = 0
+        for item in data['quotes']:
+            # API se data nikal kar apne style mein map kar rahe hain
+            quote_text = item['quote']
+            quote_author = item['author']
+            
+            # Check duplicate (taaki baar baar same save na ho)
+            if not Quote.objects.filter(text=quote_text).exists():
+                Quote.objects.create(text=quote_text, author=quote_author)
+                count += 1
+                
+        return HttpResponse(f"<h1>🚀 Done!</h1><p>Successfully downloaded and added <b>{count}</b> new quotes to your database.</p>")
+    
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")
+
+# 2. Ye apka Main Home Page Logic (Isme 'Random' logic check kar lein)
+def daily_tracker(request):
+    # Random Logic: order_by('?') ka matlab hai 'Randomly Pick Karo'
+    # Ye apne aap loop mein chalta rahega (har refresh par naya)
+    random_quote = Quote.objects.order_by('?').first()
+    
+    if not random_quote:
+        # Agar DB khali hai to Fallback
+        random_quote = Quote(text="Likho kam, Padho jyada!!", author="Muntazir")
+
+    # Baaki aapka purana logic...
+    habits = Habit.objects.all()
+    # ... (baaki context wagera same rakhein) ...
+    
+    return render(request, 'tracker/index.html', {
+        'habits': habits,
+        'quote': random_quote, # <-- Ye template me jayega
+        # ... baaki context ...
+    })
