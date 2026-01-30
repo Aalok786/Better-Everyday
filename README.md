@@ -3,7 +3,7 @@
 A minimal, aesthetic, and distraction-free habit tracker built with **Django** and **Tailwind CSS**. Designed to help you improve 1% every day.
 
 ![App Screenshot](https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&q=80&w=2072&ixlib=rb-4.0.3)
-*(You can replace this link with your own screenshot later)*
+
 
 ## ✨ Features
 - **📊 Consistency Grid:** GitHub-style heatmap to visualize your streak (Last 30 days).
@@ -18,5 +18,5 @@ If you want to run this project on your own machine:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/Aalok786/focus-2026.git](https://github.com/Aalok786/focus-2026.git)
-   cd focus-2026
+   git clone [https://github.com/Aalok786/Better-Everyday.git](https://github.com/Aalok786/Better-Everyday.git)
+   cd Better-Everyday
