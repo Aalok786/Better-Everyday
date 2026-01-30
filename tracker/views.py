@@ -1,15 +1,22 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from datetime import timedelta, datetime
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from .models import Habit, DailyEntry, Quote
+import json
+from urllib.request import urlopen
 
+# ==========================================
+# 1. MAIN APP LOGIC (Fixed Grid, Time, Name)
+# ==========================================
 def daily_tracker(request):
-    # 1. India Time Setup (UTC + 5:30 manually)
+    # --- A. India Time Setup ---
     utc_now = timezone.now()
     india_time = utc_now + timedelta(hours=5, minutes=30)
     today = india_time.date()
     
-    # 2. Greeting Logic
+    # --- B. Greeting Logic ---
     current_hour = india_time.hour
     if 5 <= current_hour < 12:
         greeting = "Good Morning"
@@ -18,7 +25,7 @@ def daily_tracker(request):
     else:
         greeting = "Good Evening"
 
-    # 3. Date Selection Logic
+    # --- C. Date Selection ---
     selected_date_str = request.GET.get('date')
     if selected_date_str:
         try:
@@ -28,16 +35,16 @@ def daily_tracker(request):
     else:
         selected_date = today
 
-    # 4. Habits Data
+    # --- D. Habits Data ---
     habits = Habit.objects.all()
     completed_habit_ids = []
     if DailyEntry.objects.filter(date=selected_date).exists():
         entry = DailyEntry.objects.get(date=selected_date)
         completed_habit_ids = list(entry.habits_completed.values_list('id', flat=True))
 
-    # 5. Grid Logic (Last 30 Days) - YE PART GRID DIKHAYEGA
+    # --- E. Grid Logic (Last 30 Days) ---
     history = []
-    for i in range(29, -1, -1):
+    for i in range(29, -1, -1): # Past 30 days
         d = today - timedelta(days=i)
         
         total_habits = habits.count()
@@ -54,35 +61,62 @@ def daily_tracker(request):
             'is_today': (d == today)
         })
 
-    # 6. Calendar Strip Logic
+    # --- F. Calendar Strip ---
     date_list = []
-    for i in range(14, -2, -1): # Past 14 days + Next 2 days
+    for i in range(14, -3, -1): # Past 14 days + Next 2 days
         d = today - timedelta(days=i)
         date_list.append(d)
 
-    # 7. Quote Logic
+    # --- G. Random Quote ---
     quote = Quote.objects.order_by('?').first()
     if not quote:
         quote = Quote(text="Likho kam, Padho jyada!!", author="Muntazir")
 
-    # 8. Stats Logic
+    # --- H. Stats Unlock Logic ---
     show_stats = False
     target_date = datetime.strptime("2026-02-07", "%Y-%m-%d").date()
     if today >= target_date:
         show_stats = True
 
-    # FINAL DATA PACKET (Ye HTML ke paas jayega)
     context = {
         'habits': habits,
         'completed_ids': completed_habit_ids,
         'selected_date': selected_date,
-        'today': today,          # <-- Date Box ke liye
-        'greeting': greeting,    # <-- Greeting ke liye
-        'username': "Aalok",     # <-- Naam ke liye
+        'today': today,
+        'greeting': greeting,
+        'username': "Aalok",   # <-- Aapka Naam
         'date_list': date_list,
-        'history': history,      # <-- Grid ke liye
+        'history': history,
         'show_stats': show_stats,
         'quote': quote
     }
-    
     return render(request, 'tracker/index.html', context)
+
+
+# ==========================================
+# 2. HELPER FUNCTIONS (To Fix Build Error)
+# ==========================================
+
+def create_superuser_view(request):
+    try:
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+            return HttpResponse("✅ Success! User: <b>admin</b> | Password: <b>admin123</b> created.")
+        else:
+            return HttpResponse("⚠️ Admin user already exists. Go to /admin to login.")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")
+
+def populate_quotes(request):
+    url = "https://dummyjson.com/quotes?limit=50"
+    try:
+        response = urlopen(url)
+        data = json.loads(response.read())
+        count = 0
+        for item in data['quotes']:
+            if not Quote.objects.filter(text=item['quote']).exists():
+                Quote.objects.create(text=item['quote'], author=item['author'])
+                count += 1
+        return HttpResponse(f"<h1>🚀 Done!</h1><p>Added {count} quotes.</p>")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")
