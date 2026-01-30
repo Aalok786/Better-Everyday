@@ -57,22 +57,14 @@
     <div class="w-full max-w-lg md:max-w-2xl px-4 pb-28 md:pb-10 flex-1 overflow-y-auto no-scrollbar">
 
         <div id="view-home" class="tab-content active space-y-6 animate-fade">
-
             <div class="mt-4 md:mt-0">
                 <h1
                     class="text-3xl md:text-4xl font-bold bg-gradient-to-br from-white to-gray-500 bg-clip-text text-transparent">
-                    {% if selected_date == today %}
-                    Good Morning! 👋
-                    {% else %}
-                    Viewing Past 👀
-                    {% endif %}
+                    {% if selected_date == today %}Good Morning! 👋{% else %}Viewing Past 👀{% endif %}
                 </h1>
                 <p class="text-gray-400 text-sm mt-1">
-                    {% if selected_date == today %}
-                    Ready to win the day?
-                    {% else %}
-                    History for: <span class="text-blue-400 font-bold">{{ selected_date|date:"l, d M Y" }}</span>
-                    {% endif %}
+                    {% if selected_date == today %}Ready to win the day?{% else %}History for: <span
+                        class="text-blue-400 font-bold">{{ selected_date|date:"l, d M Y" }}</span>{% endif %}
                 </p>
             </div>
 
@@ -91,17 +83,10 @@
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Consistency Map</span>
                     <span class="text-xs text-gray-500">Last 30 Days</span>
                 </div>
-
                 <div class="flex flex-wrap gap-1 justify-center md:justify-start">
                     {% for day in history %}
                     <a href="?date={{ day.date|date:'Y-m-d' }}" title="{{ day.date|date:'d M' }}: {{ day.percent }}%"
-                        class="w-4 h-4 rounded-sm transition-all hover:scale-125 cursor-pointer
-                          {% if day.percent == 0 %} bg-gray-800 
-                          {% elif day.percent < 50 %} bg-green-900/80 
-                          {% elif day.percent < 80 %} bg-green-600 
-                          {% else %} bg-green-400 {% endif %}
-                          {% if day.is_today %} ring-2 ring-white ring-offset-1 ring-offset-gray-900 {% endif %}
-                          {% if day.date == selected_date %} ring-2 ring-blue-500 ring-offset-1 ring-offset-gray-900 border border-blue-400 {% endif %}">
+                        class="w-4 h-4 rounded-sm transition-all hover:scale-125 cursor-pointer {% if day.percent == 0 %} bg-gray-800 {% elif day.percent < 50 %} bg-green-900/80 {% elif day.percent < 80 %} bg-green-600 {% else %} bg-green-400 {% endif %} {% if day.is_today %} ring-2 ring-white ring-offset-1 ring-offset-gray-900 {% endif %} {% if day.date == selected_date %} ring-2 ring-blue-500 ring-offset-1 ring-offset-gray-900 border border-blue-400 {% endif %}">
                     </a>
                     {% endfor %}
                 </div>
@@ -114,37 +99,26 @@
                 <h2 class="text-lg font-bold text-gray-200 mb-4 flex items-center justify-center gap-2">
                     <i class="ph-duotone ph-timer text-blue-400"></i> Deep Focus Mode
                 </h2>
-
                 <div id="timer-display"
                     class="text-5xl md:text-6xl font-mono text-white mb-6 font-bold tracking-widest tabular-nums">
-                    00:00:00
-                </div>
-
+                    00:00:00</div>
                 <div class="flex justify-center gap-3">
                     <button onclick="startTimer()"
-                        class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-blue-900/50">
-                        <i class="ph-fill ph-play"></i> Start
-                    </button>
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-blue-900/50"><i
+                            class="ph-fill ph-play"></i> Start</button>
                     <button onclick="stopTimer()"
-                        class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-xl font-bold transition border border-gray-600">
-                        Pause
-                    </button>
+                        class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-xl font-bold transition border border-gray-600">Pause</button>
                     <button onclick="resetTimer()"
-                        class="text-gray-500 hover:text-red-400 px-4 py-2 font-medium transition text-sm">
-                        Reset
-                    </button>
+                        class="text-gray-500 hover:text-red-400 px-4 py-2 font-medium transition text-sm">Reset</button>
                 </div>
             </div>
-
         </div>
 
         <div id="view-habits" class="tab-content hidden space-y-4 animate-fade">
-
             <div class="overflow-x-auto whitespace-nowrap py-2 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
                 {% for d in date_list %}
                 <a href="?date={{ d|date:'Y-m-d' }}" onclick="switchTab('habits')"
-                    class="inline-block px-4 py-3 mx-1 rounded-xl text-center transition-all duration-200 border border-transparent
-                          {% if d == selected_date %} bg-blue-600 text-white shadow-lg shadow-blue-900/50 scale-105 {% else %} bg-gray-900 text-gray-500 border-gray-800 hover:border-gray-600 {% endif %}">
+                    class="inline-block px-4 py-3 mx-1 rounded-xl text-center transition-all duration-200 border border-transparent {% if d == selected_date %} bg-blue-600 text-white shadow-lg shadow-blue-900/50 scale-105 {% else %} bg-gray-900 text-gray-500 border-gray-800 hover:border-gray-600 {% endif %}">
                     <span class="block text-[10px] uppercase font-bold tracking-wider">{{ d|date:"D" }}</span>
                     <span class="block text-xl font-bold">{{ d|date:"d" }}</span>
                 </a>
@@ -152,14 +126,12 @@
             </div>
 
             <div class="flex items-center justify-between mb-2 mt-2">
-                <h2 class="text-xl font-bold text-white">
-                    {% if selected_date == today %} Today's Tasks {% else %} Tasks for {{ selected_date|date:"M d" }} {%endif %}
-                </h2>
+                <h2 class="text-xl font-bold text-white">{% if selected_date == today %} Today's Tasks {% else %} Tasks
+                    for {{ selected_date|date:"M d" }} {% endif %}</h2>
                 {% if selected_date != today %}
                 <a href="?date={{ today|date:'Y-m-d' }}"
-                    class="text-xs bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition">
-                    Back to Today
-                </a>
+                    class="text-xs bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition">Back
+                    to Today</a>
                 {% endif %}
             </div>
 
@@ -168,9 +140,8 @@
                 class="group bg-gray-900 hover:bg-gray-800/80 transition-all p-4 rounded-xl border border-gray-800 flex items-center justify-between shadow-sm">
                 <div class="flex flex-col">
                     <span class="font-medium text-gray-200">{{ habit.name }}</span>
-                    <span class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">
-                        {{ habit.get_habit_type_display }}
-                    </span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">{{
+                        habit.get_habit_type_display }}</span>
                 </div>
 
                 <form method="POST">
@@ -180,8 +151,7 @@
 
                     {% if habit.habit_type == 'BOOL' %}
                     <button type="submit" name="action" value="toggle"
-                        class="w-12 h-12 rounded-xl flex items-center justify-center transition-all 
-                            {% if habit.id in completed_ids %} bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)] scale-105 {% else %} bg-gray-950 text-gray-600 border border-gray-800 hover:border-gray-600 {% endif %}">
+                        class="w-12 h-12 rounded-xl flex items-center justify-center transition-all {% if habit.id in completed_ids %} bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)] scale-105 {% else %} bg-gray-950 text-gray-600 border border-gray-800 hover:border-gray-600 {% endif %}">
                         <i
                             class="ph-bold {% if habit.id in completed_ids %}ph-check{% else %}ph-circle{% endif %} text-xl"></i>
                     </button>
@@ -211,127 +181,66 @@
 
         <div id="view-stats"
             class="tab-content hidden flex flex-col items-center justify-center pt-10 text-center space-y-6 animate-fade">
-
             {% if show_stats %}
             <div
                 class="w-32 h-32 bg-green-500/10 rounded-full flex items-center justify-center border border-green-500/20 mb-4 animate-pulse">
                 <i class="ph-duotone ph-trophy text-6xl text-green-500"></i>
             </div>
             <h2 class="text-3xl font-bold text-white">You're on Fire! 🔥</h2>
-            <div class="grid grid-cols-2 gap-4 w-full mt-6">
-                <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-                    <div class="text-2xl font-bold text-blue-400">85%</div>
-                    <div class="text-xs text-gray-500 uppercase">Consistency</div>
-                </div>
-                <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-                    <div class="text-2xl font-bold text-purple-400">12</div>
-                    <div class="text-xs text-gray-500 uppercase">Best Streak</div>
-                </div>
-            </div>
             <p class="text-gray-400 text-sm mt-4">Keep going to unlock advanced charts.</p>
-
             {% else %}
             <div
                 class="bg-gray-900/50 p-8 rounded-3xl border border-gray-800/50 backdrop-blur-sm max-w-xs mx-auto relative overflow-hidden group">
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-950/80 z-10"></div>
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
-
                 <div class="relative z-20 flex flex-col items-center">
-                    <i
-                        class="ph-fill ph-lock-key text-5xl text-gray-600 mb-4 group-hover:text-blue-500 transition-colors duration-500"></i>
+                    <i class="ph-fill ph-lock-key text-5xl text-gray-600 mb-4"></i>
                     <h2 class="text-xl font-bold text-gray-200">Stats Locked</h2>
-                    <p class="text-sm text-gray-500 mt-2">
-                        Analytics will automatically unlock on <br>
-                        <span class="text-blue-400 font-bold">February 7th, 2026</span>
-                    </p>
-                    <div class="mt-6 h-1 w-full bg-gray-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-600 w-[60%] animate-pulse"></div>
-                    </div>
-                    <p class="text-[10px] text-gray-600 mt-2">Gathering data...</p>
+                    <p class="text-sm text-gray-500 mt-2">Unlocks on <span class="text-blue-400 font-bold">Feb
+                            7th</span></p>
                 </div>
             </div>
             {% endif %}
         </div>
-
     </div>
 
     <div
         class="md:hidden fixed bottom-6 left-6 right-6 bg-gray-900/90 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl p-2 flex justify-around items-center z-50">
         <button onclick="switchTab('home')" id="btn-home"
-            class="nav-btn active flex flex-col items-center gap-1 p-2 rounded-xl text-blue-400 transition">
-            <i class="ph-fill ph-house text-2xl"></i>
-            <span class="text-[10px] font-medium">Home</span>
-        </button>
+            class="nav-btn active flex flex-col items-center gap-1 p-2 rounded-xl text-blue-400 transition"><i
+                class="ph-fill ph-house text-2xl"></i></button>
         <button onclick="switchTab('habits')" id="btn-habits"
-            class="nav-btn flex flex-col items-center gap-1 p-2 rounded-xl text-gray-500 transition hover:text-gray-300">
-            <i class="ph-fill ph-check-square text-2xl"></i>
-            <span class="text-[10px] font-medium">Habits</span>
-        </button>
+            class="nav-btn flex flex-col items-center gap-1 p-2 rounded-xl text-gray-500 transition hover:text-gray-300"><i
+                class="ph-fill ph-check-square text-2xl"></i></button>
         <button onclick="switchTab('stats')" id="btn-stats"
-            class="nav-btn flex flex-col items-center gap-1 p-2 rounded-xl text-gray-500 transition hover:text-gray-300">
-            <i class="ph-fill ph-chart-pie-slice text-2xl"></i>
-            <span class="text-[10px] font-medium">Stats</span>
-        </button>
+            class="nav-btn flex flex-col items-center gap-1 p-2 rounded-xl text-gray-500 transition hover:text-gray-300"><i
+                class="ph-fill ph-chart-pie-slice text-2xl"></i></button>
     </div>
 
     <script>
-        // 1. TAB SWITCHING
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => { el.classList.add('hidden'); el.classList.remove('active'); });
-            const activeTab = document.getElementById('view-' + tabName);
-            activeTab.classList.remove('hidden');
-            activeTab.classList.add('active');
+            document.getElementById('view-' + tabName).classList.remove('hidden');
 
             // Nav Styling
             document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-blue-400'); btn.classList.add('text-gray-500'); });
             const mobileBtn = document.getElementById('btn-' + tabName);
             if (mobileBtn) { mobileBtn.classList.remove('text-gray-500'); mobileBtn.classList.add('text-blue-400'); }
 
-            // Desktop Styling
             document.querySelectorAll('.nav-item').forEach(btn => { btn.classList.remove('text-blue-400'); btn.classList.add('text-gray-400'); });
             const navIndex = tabName === 'home' ? 0 : tabName === 'habits' ? 1 : 2;
             document.querySelectorAll('.nav-item')[navIndex].classList.add('text-blue-400');
         }
 
-        // 2. STOPWATCH LOGIC
-        let timerInterval;
-        let seconds = 0;
-        let isRunning = false;
-
+        let timerInterval; let seconds = 0; let isRunning = false;
         function updateDisplay() {
             const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
             const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
             const secs = (seconds % 60).toString().padStart(2, '0');
             document.getElementById('timer-display').innerText = `${hrs}:${mins}:${secs}`;
         }
-
-        function startTimer() {
-            if (!isRunning) {
-                isRunning = true;
-                timerInterval = setInterval(() => {
-                    seconds++;
-                    updateDisplay();
-                }, 1000);
-            }
-        }
-
-        function stopTimer() {
-            isRunning = false;
-            clearInterval(timerInterval);
-        }
-
-        function resetTimer() {
-            stopTimer();
-            seconds = 0;
-            updateDisplay();
-        }
-
-        // 3. AUTO TAB SELECTION (Agar URL me date hai to Habits tab khulna chahiye?)
-        // Optional: Uncomment neeche wali line agar chahte ho ki date select karne par sidha habits tab khule
-        // const urlParams = new URLSearchParams(window.location.search);
-        // if(urlParams.has('date')) switchTab('habits');
+        function startTimer() { if (!isRunning) { isRunning = true; timerInterval = setInterval(() => { seconds++; updateDisplay(); }, 1000); } }
+        function stopTimer() { isRunning = false; clearInterval(timerInterval); }
+        function resetTimer() { stopTimer(); seconds = 0; updateDisplay(); }
     </script>
-
 </body>
 
 </html>
