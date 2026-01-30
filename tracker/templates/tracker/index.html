@@ -201,16 +201,34 @@
         // --- 2. INTERNET QUOTE FETCHER ---
         async function fetchQuote() {
             const quoteText = document.getElementById('quote-text');
+            const quoteAuthor = document.getElementById('quote-author');
+
+            // Fallback Quote (Agar API fail ho jaye)
+            const fallbackQuote = {
+                text: "Likho kam, Padho jyada!! Padhne se aapki girahein jrur khulengi, likhne ka kya hai,humare bujurg itna kuch likh ke to gayein hain, kabhi kabhi lagta hai ki ab kuch gunjaish hi nahi rahi. Haan agar uske baad bhi lage, tb hi likho!",
+                author: "Muntazir Firozaabaadi"
+            };
+
             try {
-                const response = await fetch('https://api.quotable.io/random?tags=technology,inspirational,wisdom');
-                const data = await response.json();
-                if (data.content) {
-                    quoteText.innerText = `"${data.content}"`;
-                    document.getElementById('quote-author').innerText = `- ${data.author}`;
-                }
-            } catch (error) { console.log("Quote API fail, using fallback"); }
+                // Hum ek fast API use karenge
+                const response = await fetch('https://api.api-ninjas.com/v2/randomquotes?category=happiness&categories=wisdom%2Csuccess%2Cphilosophy%2Clife%2Ctruth%2Cfaith%2Chumor%2Ccourage%2Chappiness%2Cwriting%2Ctime%2Cdeath', {
+                    headers: { 'X-Api-Key': '08RfLLpKr1gwsoysU4Vj5lChZNXFe8jhGgRki4X1' } // Ya simple Quotable use karein
+                });
+                // Abhi ke liye simple logic: Agar 3 second mein response nahi aaya, fallback dikhao
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                const res = await fetch('https://api.quotable.io/random', { signal: controller.signal });
+                const data = await res.json();
+
+                quoteText.innerText = `"${data.content}"`;
+                quoteAuthor.innerText = `- ${data.author}`;
+            } catch (error) {
+                // Internet slow hai ya API down hai, toh ye dikhao:
+                quoteText.innerText = `"${fallbackQuote.text}"`;
+                quoteAuthor.innerText = `- ${fallbackQuote.author}`;
+            }
         }
-        fetchQuote();
     </script>
 
     <script>
