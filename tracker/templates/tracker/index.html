@@ -110,8 +110,7 @@
 
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-bold text-white">
-                    {% if selected_date == today %} Today's List {% else %} {{ selected_date|date:"M d" }} List {% endif
-                    %}
+                    {% if selected_date == today %} Today's List {% else %} {{ selected_date|date:"M d" }} List {% endif %}
                 </h2>
                 {% if selected_date != today %}
                 <a href="?date={{ today|date:'Y-m-d' }}&view=habits"
