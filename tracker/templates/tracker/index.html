@@ -18,7 +18,6 @@
             scrollbar-width: none;
         }
 
-        /* Grid Fix */
         .github-grid {
             display: flex;
             flex-wrap: wrap;
@@ -32,14 +31,13 @@
 
     <nav
         class="flex w-full max-w-2xl bg-gray-900/80 backdrop-blur-md border-b border-gray-800 p-4 justify-between items-center sticky top-0 z-50 rounded-b-2xl mb-4">
-        <div class="flex items-center gap-2" onclick="switchTab('home')">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="switchTab('home')">
             <div class="bg-green-500/10 p-2 rounded-lg">
                 <i class="ph-fill ph-plant text-green-500 text-2xl"></i>
             </div>
             <div class="flex flex-col">
                 <span class="font-bold text-lg tracking-wide leading-none text-gray-100">Better Everyday</span>
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">One step at a
-                    time</span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">One step at a time</span>
             </div>
         </div>
         <div class="text-xs text-gray-400 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700 font-mono">
@@ -76,8 +74,7 @@
                 </div>
                 <div class="github-grid">
                     {% for day in history %}
-                    <a href="?date={{ day.date|date:'Y-m-d' }}&view=habits"
-                        title="{{ day.date|date:'d M' }}: {{ day.percent }}%" class="w-8 h-8 rounded-md transition-all flex items-center justify-center text-[8px]
+                    <a href="?date={{ day.date|date:'Y-m-d' }}&view=habits" class="w-8 h-8 rounded-md transition-all flex items-center justify-center text-[8px]
                           {% if day.percent == 0 %} bg-gray-800/50 border border-gray-700
                           {% elif day.percent < 50 %} bg-green-900/60 border border-green-800
                           {% elif day.percent < 80 %} bg-green-600 border border-green-500
@@ -85,20 +82,19 @@
                           {% if day.is_today %} ring-2 ring-white {% endif %}
                           {% if day.date == selected_date %} ring-2 ring-blue-500 {% endif %}">
                     </a>
-                    {% empty %}
-                    <p class="text-gray-500 text-xs">No history data available.</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
         <div id="view-habits" class="tab-content hidden space-y-4 animate-fade">
+
             <div class="sticky top-0 bg-gray-950/95 backdrop-blur z-20 py-2 -mx-4 px-4 border-b border-gray-800/50">
-                <div class="flex overflow-x-auto gap-2 no-scrollbar pb-1">
+                <div id="date-scroller" class="flex overflow-x-auto gap-2 no-scrollbar pb-1 scroll-smooth">
                     {% for d in date_list %}
-                    <a href="?date={{ d|date:'Y-m-d' }}&view=habits" class="flex flex-col items-center justify-center min-w-[50px] p-2 rounded-xl border transition-all
-                              {% if d == selected_date %} bg-blue-600 border-blue-500 text-white scale-105
-                              {% else %} bg-gray-900 border-gray-800 text-gray-500 {% endif %}">
+                    <a href="?date={{ d|date:'Y-m-d' }}&view=habits" id="date-{{ d|date:'Y-m-d' }}" class="flex flex-col items-center justify-center min-w-[54px] p-2 rounded-xl border transition-all shrink-0
+                              {% if d == selected_date %} bg-blue-600 border-blue-500 text-white scale-105 shadow-lg
+                              {% else %} bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 {% endif %}">
                         <span class="text-[9px] uppercase font-bold">{{ d|date:"D" }}</span>
                         <span class="text-lg font-bold leading-none">{{ d|date:"d" }}</span>
                     </a>
@@ -108,38 +104,54 @@
 
             {% for habit in habits %}
             <div
-                class="group bg-gray-900 p-4 rounded-xl border border-gray-800 flex items-center justify-between shadow-sm">
+                class="group bg-gray-900 p-4 rounded-xl border border-gray-800 flex items-center justify-between shadow-sm transition-all hover:border-gray-700">
                 <div class="flex flex-col">
-                    <span class="font-medium text-gray-200">{{ habit.name }}</span>
-                    <span class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">{{
-                        habit.get_habit_type_display }}</span>
+                    <span class="font-medium text-gray-200 text-lg">{{ habit.name }}</span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">
+                        {{ habit.get_habit_type_display }}
+                    </span>
                 </div>
+
                 <form method="POST" action="?date={{ selected_date|date:'Y-m-d' }}&view=habits">
                     {% csrf_token %}
                     <input type="hidden" name="habit_id" value="{{ habit.id }}">
-                    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+
                     {% if habit.habit_type == 'BOOL' %}
-                    <button type="submit" name="action" value="toggle"
-                        class="w-12 h-12 rounded-xl flex items-center justify-center transition-all {% if habit.id in completed_ids %} bg-green-500 text-white {% else %} bg-gray-950 text-gray-600 border border-gray-800 {% endif %}">
+                    <button type="submit" name="action" value="toggle" class="w-14 h-12 rounded-xl flex items-center justify-center transition-all cursor-pointer active:scale-95
+                            {% if habit.id in completed_ids %} 
+                                bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)] border border-green-400
+                            {% else %} 
+                                bg-gray-950 text-gray-600 border border-gray-800 hover:bg-gray-800 
+                            {% endif %}">
                         <i
-                            class="ph-bold {% if habit.id in completed_ids %}ph-check{% else %}ph-circle{% endif %} text-xl"></i>
+                            class="ph-bold {% if habit.id in completed_ids %}ph-check text-2xl{% else %}ph-circle text-xl{% endif %}"></i>
                     </button>
+
                     {% elif habit.habit_type == 'INT' %}
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 bg-gray-950 rounded-lg p-1 border border-gray-800">
                         <input type="number" name="value_int" placeholder="0"
-                            class="w-16 bg-gray-950 border border-gray-700 rounded-lg p-2 text-center text-sm text-white">
-                        <button type="submit" class="text-green-500"><i
-                                class="ph-bold ph-floppy-disk text-xl"></i></button>
+                            class="w-12 bg-transparent text-center text-white outline-none text-sm font-mono">
+                        <button type="submit"
+                            class="w-8 h-8 flex items-center justify-center bg-gray-800 rounded-md text-green-500 hover:bg-gray-700">
+                            <i class="ph-bold ph-check"></i>
+                        </button>
                     </div>
                     {% else %}
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 bg-gray-950 rounded-lg p-1 border border-gray-800">
                         <input type="text" name="value_text" placeholder="..."
-                            class="w-24 bg-gray-950 border border-gray-700 rounded-lg p-2 text-xs text-white">
-                        <button type="submit" class="text-green-500"><i
-                                class="ph-bold ph-paper-plane-right text-xl"></i></button>
+                            class="w-20 bg-transparent px-2 text-white outline-none text-xs">
+                        <button type="submit"
+                            class="w-8 h-8 flex items-center justify-center bg-gray-800 rounded-md text-green-500 hover:bg-gray-700">
+                            <i class="ph-bold ph-paper-plane-right"></i>
+                        </button>
                     </div>
                     {% endif %}
                 </form>
+            </div>
+            {% empty %}
+            <div class="text-center py-10 opacity-50">
+                <p>No habits added yet.</p>
+                <a href="/admin" class="text-blue-400 underline text-sm">Add in Admin</a>
             </div>
             {% endfor %}
         </div>
@@ -147,7 +159,7 @@
         <div id="view-stats"
             class="tab-content hidden flex flex-col items-center justify-center pt-10 text-center space-y-6">
             {% if show_stats %}
-            <h2 class="text-3xl font-bold text-white">You're on Fire! 🔥</h2>
+            <h2 class="text-3xl font-bold text-white">Stats Unlocked! 🔥</h2>
             {% else %}
             <div class="bg-gray-900/50 p-8 rounded-3xl border border-gray-800/50">
                 <i class="ph-fill ph-lock-key text-5xl text-gray-600 mb-4"></i>
@@ -196,18 +208,37 @@
     </div>
 
     <script>
+        // 1. Tab Switcher
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => { el.classList.add('hidden'); el.classList.remove('active'); });
             document.getElementById('view-' + tabName).classList.remove('hidden');
-
             document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-blue-400'); btn.classList.add('text-gray-500'); });
             const mobileBtn = document.getElementById('btn-' + tabName);
             if (mobileBtn) { mobileBtn.classList.remove('text-gray-500'); mobileBtn.classList.add('text-blue-400'); }
+
+            // RED FIX: Scroll to active date when Habits tab opens
+            if (tabName === 'habits') {
+                setTimeout(scrollToActiveDate, 100);
+            }
+        }
+
+        // RED FIX: Auto Scroll Logic
+        function scrollToActiveDate() {
+            const container = document.getElementById('date-scroller');
+            // 'selected_date' is rendered by Django as 'YYYY-MM-DD'
+            const activeId = "date-{{ selected_date|date:'Y-m-d' }}";
+            const activeEl = document.getElementById(activeId);
+
+            if (container && activeEl) {
+                const scrollLeft = activeEl.offsetLeft - (container.offsetWidth / 2) + (activeEl.offsetWidth / 2);
+                container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+            }
         }
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('view') === 'habits') { switchTab('habits'); }
 
+        // Timer Logic
         let timerInterval; let seconds = 0; let isRunning = false;
         function updateDisplay() {
             const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
