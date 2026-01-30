@@ -44,74 +44,103 @@ def get_daily_score(selected_date):
 
 # ... (get_daily_score function waisa hi rahega) ...
 
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from datetime import timedelta, datetime
+from .models import Habit, DailyEntry, Quote
+
 def daily_tracker(request):
-    # 1. Date Selection Logic
-    today = timezone.now().date()
-    selected_date_str = request.GET.get('date') # URL se date uthao (?date=2026-01-20)
+    # 1. India Time Setup (UTC + 5:30)
+    utc_now = timezone.now()
+    india_time = utc_now + timedelta(hours=5, minutes=30)
+    today = india_time.date()
     
+    # 2. Greeting Logic (Based on India Time)
+    current_hour = india_time.hour
+    if 5 <= current_hour < 12:
+        greeting = "Good Morning"
+    elif 12 <= current_hour < 17:
+        greeting = "Good Afternoon"
+    else:
+        greeting = "Good Evening"
+
+    # 3. Date Selection Logic
+    selected_date_str = request.GET.get('date')
     if selected_date_str:
-        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        try:
+            selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = today
     else:
         selected_date = today
 
-    # Future Date Protection (Future mein jane se roko)
+    # Future Date Protection
     if selected_date > today:
         return redirect('tracker')
 
-    # 2. Calendar Strip Data (Pichle 30 din ki list)
+    # 4. Calendar Strip (Pichle 15 din + Aane wale 2 din)
     date_list = []
-    for i in range(30): # Last 30 days
+    for i in range(14, -1, -1): # Last 14 days
         d = today - timedelta(days=i)
         date_list.append(d)
-    
-    # 3. Habits & Data Fetching for Selected Date
+    # Optional: Next 2 days (Future viewing)
+    # date_list.append(today + timedelta(days=1)) 
+
+    # 5. Habits Logic
     habits = Habit.objects.all()
-    
-    # User ne us din kya tick kiya tha?
     completed_habit_ids = []
-    try:
+    
+    # Agar data nahi hai, to bhi empty list return karein
+    if DailyEntry.objects.filter(date=selected_date).exists():
         entry = DailyEntry.objects.get(date=selected_date)
         completed_habit_ids = list(entry.habits_completed.values_list('id', flat=True))
-    except DailyEntry.DoesNotExist:
-        entry = None
 
-    # 4. Grid Logic (Home Page Consistency)
-    # (Ye purana logic hi hai, bas ab link banayega)
+    # 6. Grid Logic (Last 30 Days - Fixed Loop)
     history = []
-    start_date = today - timedelta(days=29) # Grid start
-    for i in range(30):
-        d = start_date + timedelta(days=i)
-        try:
-            e = DailyEntry.objects.get(date=d)
-            total = habits.count()
-            done = e.habits_completed.count()
-            percent = int((done / total) * 100) if total > 0 else 0
-        except DailyEntry.DoesNotExist:
-            percent = 0
+    for i in range(29, -1, -1): # Past 30 days loop
+        d = today - timedelta(days=i)
         
+        # Calculate Percentage
+        total_habits = habits.count()
+        if total_habits > 0:
+            try:
+                entry = DailyEntry.objects.get(date=d)
+                done = entry.habits_completed.count()
+                percent = int((done / total_habits) * 100)
+            except DailyEntry.DoesNotExist:
+                percent = 0
+        else:
+            percent = 0 # Agar habits hi nahi hain
+            
         history.append({
             'date': d, 
             'percent': percent,
             'is_today': (d == today)
         })
 
-    # 5. Stats Logic (Auto-Switch after Feb 7th)
+    # 7. Stats Logic
     show_stats = False
     target_date = datetime.strptime("2026-02-07", "%Y-%m-%d").date()
     if today >= target_date:
         show_stats = True
+    
+    # Random Quote
+    quote = Quote.objects.order_by('?').first()
+    if not quote:
+        quote = Quote(text="Likho kam, Padho jyada!!", author="Muntazir")
 
     return render(request, 'tracker/index.html', {
         'habits': habits,
         'completed_ids': completed_habit_ids,
         'selected_date': selected_date,
         'today': today,
-        'date_list': date_list,   # Calendar ke liye
-        'history': history,       # Grid ke liye
-        'show_stats': show_stats, # Stats toggle ke liye
-        'quote': Quote.objects.order_by('?').first()
+        'greeting': greeting,    # <-- Passed Greeting
+        'username': "Aalok",     # <-- Passed Name
+        'date_list': date_list,  # <-- For Calendar
+        'history': history,      # <-- For Grid
+        'show_stats': show_stats,
+        'quote': quote
     })
-
 # File ke sabse neeche ye paste karein:
 def create_superuser_view(request):
     try:
