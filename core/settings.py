@@ -76,13 +76,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Database Configuration
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3', # Local pe SQLite chalega
+        # Laptop par SQLite chalega, Render par NeonDB chalega
+        default='sqlite:///db.sqlite3',
         conn_max_age=600
     )
 }
-
 # Render par Database URL set karne ke liye:
 if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(conn_max_age=600)
